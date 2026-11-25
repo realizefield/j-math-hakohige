@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>データと箱ひげ図｜GAMBA 中学数学（プログラム0）</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#2d3436;--sub:#636e72;--line:#dfe6e9;--bg:#f6f9fc;--main:#0984e3;--ok:#00a37a;--ng:#d63031;--c-min:#636e72;--c-q1:#e17055;--c-q2:#d63031;--c-q3:#0984e3;--c-max:#00a37a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"BIZ UDGothic","BIZ UDPGothic","Hiragino Sans","Meiryo",sans-serif;line-height:1.8;font-size:16px}
+header{background:linear-gradient(135deg,#0984e3,#00b894);color:#fff;padding:18px 16px 14px}
+header h1{margin:0;font-size:22px}
+header p{margin:2px 0 0;font-size:13px;opacity:.9}
+nav{position:sticky;top:0;z-index:5;background:#fff;border-bottom:2px solid var(--line);display:flex;gap:4px;overflow-x:auto;padding:6px 8px}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:18px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+nav button.on{background:var(--main);color:#fff;border-color:var(--main)}
+nav button.done::after{content:" ✔";color:var(--ok)}
+nav button.on.done::after{color:#fff}
+main{max-width:860px;margin:0 auto;padding:14px 12px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-size:20px;border-left:8px solid var(--main);padding-left:10px;margin:18px 0 10px}
+h3{font-size:17px;margin:22px 0 8px;background:#e8f4fd;padding:4px 10px;border-radius:6px}
+.point{background:#fffbe6;border:2px solid #fdcb6e;border-radius:10px;padding:10px 14px;margin:10px 0}
+.point b.t{display:inline-block;background:#fdcb6e;border-radius:4px;padding:0 8px;margin-bottom:4px}
+.ex{background:#fff;border:2px solid var(--main);border-radius:12px;padding:12px 14px;margin:14px 0}
+.ex .ttl{font-weight:700;color:var(--main)}
+.data{background:#f1f2f6;border-radius:6px;padding:4px 10px;display:inline-block;margin:4px 0;letter-spacing:.05em}
+.fig{overflow-x:auto;margin:8px 0}
+.stepbox .st{background:#f8fffb;border-left:5px solid var(--ok);margin:8px 0;padding:6px 10px;border-radius:4px;animation:in .35s}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.btn{font:inherit;font-size:14px;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;background:var(--main);color:#fff}
+.btn.sub{background:#b2bec3;color:#2d3436}
+.btn.hint{background:#fdcb6e;color:#2d3436}
+.btn:disabled{opacity:.5;cursor:default}
+.set{background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 14px;margin:12px 0}
+.set.practice{border-color:#74b9ff}.set.confirm{border-color:#fab1a0}
+.set h4{margin:0 0 6px;font-size:16px}
+.set h4 .prog{float:right;font-size:13px;color:var(--sub)}
+.set.clear{background:#f0fff8;border-color:var(--ok)}
+.q{display:flex;gap:10px;padding:8px 0;border-top:1px dashed var(--line)}
+.q:first-of-type{border-top:none}
+.qno{flex:0 0 auto;min-width:28px;padding:0 7px;height:28px;border-radius:14px;background:var(--main);color:#fff;text-align:center;line-height:28px;font-weight:700}
+.qbody{flex:1;min-width:0}
+.in{width:84px;font:inherit;font-size:16px;padding:3px 6px;border:2px solid #b2bec3;border-radius:6px;text-align:right}
+.fld{display:inline-block;margin:3px 12px 3px 0}
+.row{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.res.ok{color:var(--ok);font-weight:700}.res.ng{color:var(--ng);font-weight:700}
+.opt{display:block;margin:6px 0;padding:6px 10px;border:2px solid var(--line);border-radius:8px;cursor:pointer}
+.opt:hover{background:#f1f8ff}
+.opt svg{max-width:340px;display:block}
+.opts2{display:flex;flex-wrap:wrap;gap:8px}
+.opts2 .opt{flex:1 1 230px}
+svg.plot{width:100%;max-width:640px;height:auto;touch-action:none;display:block}
+.cardwrap{overflow-x:auto;padding-bottom:4px}
+.cards{position:relative}
+.card{position:absolute;top:40px;width:44px;height:44px;border:2px solid #b2bec3;border-radius:8px;background:#fff;text-align:center;line-height:40px;font-weight:700;transition:all .3s}
+.card.lo{background:#dff1ff;border-color:#74b9ff}.card.up{background:#e2f7e4;border-color:#55c57a}
+.card.mid{background:#eee;color:#999}.card.med{border-color:var(--ng);box-shadow:0 0 0 2px var(--ng)}
+.lab{position:absolute;transform:translateX(-50%);font-size:13px;white-space:nowrap;text-align:center;line-height:1.2;font-weight:700}
+.lab.top{top:4px;color:var(--c-q2)}.lab.b1{top:92px;color:var(--c-q1)}.lab.b3{top:92px;color:var(--c-q3)}
+.c-min{color:var(--c-min)}.c-q1{color:var(--c-q1)}.c-q2{color:var(--c-q2)}.c-q3{color:var(--c-q3)}.c-max{color:var(--c-max)}
+.c-min,.c-q1,.c-q2,.c-q3,.c-max{font-weight:700}
+.hb{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start}
+.hb>div{flex:1 1 300px}
+.pm{display:flex;gap:2px;margin-left:30px}
+.pm div{width:var(--bw);text-align:center}
+.pm button{width:100%;border:1px solid var(--line);background:#fff;border-radius:4px;cursor:pointer;font-size:13px;padding:0}
+.chips button{margin:2px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal.on{display:flex}
+#modal .box{background:#fff;border-radius:14px;padding:16px 18px;max-width:520px;width:100%;border:4px solid #fdcb6e}
+#cf{position:fixed;inset:0;pointer-events:none;z-index:60}
+table.ft{border-collapse:collapse;margin:6px 0;font-size:15px}table.ft th,table.ft td{border:1px solid #2d3436;padding:3px 12px;text-align:center}table.ft th{background:#e8f4fd}table.ft td.hl{background:#fff3cd;font-weight:700}
+footer{text-align:center;color:var(--sub);font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header><h1>データと箱ひげ図</h1><p>江原予備校 GAMBA 中学数学（プログラム0）　四分位数 → 箱ひげ図をかく → 読みとる → ヒストグラム</p></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<footer>江原予備校 GAMBA　※「データの代表値（平均値・度数分布表・最頻値）」は別教材で学びます</footer>
+<div id="modal"><div class="box"><div id="mt"></div><div style="text-align:right;margin-top:10px"><button class="btn" id="mc">とじる</button></div></div></div>
+<canvas id="cf"></canvas>
+
+<script>
+/* ===== 基本計算 ===== */
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e};
+const fmt=v=>String(Math.round(v*1e6)/1e6);
+function med(a){const n=a.length;return n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2}
+function stats(d){const s=[...d].sort((x,y)=>x-y),n=s.length,h=Math.floor(n/2);
+  const lower=s.slice(0,h),upper=s.slice(n-h);
+  const q1=med(lower),q2=med(s),q3=med(upper);
+  return{s,n,h,min:s[0],max:s[n-1],q1,q2,q3,range:s[n-1]-s[0],iqr:q3-q1,five:[s[0],q1,q2,q3,s[n-1]]}}
+const N={min:'最小値',q1:'第1四分位数 Q₁',q2:'中央値（第2四分位数 Q₂）',q3:'第3四分位数 Q₃',max:'最大値',range:'範囲（レンジ）',iqr:'四分位範囲',med:'中央値'};
+const COL=['#636e72','#e17055','#d63031','#0984e3','#00a37a'];
+const FN=['最小値','Q₁','中央値','Q₃','最大値'];
+
+/* ===== 図：箱ひげ図 ===== */
+function geom(dots){const cy=dots?78:48;return{cy,axisY:cy+42}}
+function boxSVG(o){
+  const{lo,hi,five,major=10,minor=1,dots=null,label=true,stage=99,pct=false,w=640,name=null,extra='',extraH=0}=o;
+  const L=40,R=w-24,X=v=>L+(v-lo)/(hi-lo)*(R-L);
+  const{cy,axisY}=geom(dots),H=axisY+34+extraH;
+  let s=`<svg viewBox="0 0 ${w} ${H}" class="plot">`;
+  s+=`<line x1="${L}" x2="${R}" y1="${axisY}" y2="${axisY}" stroke="#2d3436" stroke-width="1.5"/>`;
+  for(let v=lo;v<=hi+1e-9;v+=minor){const m=Math.abs((v-lo)/major-Math.round((v-lo)/major))<1e-9,x=X(v);
+    s+=`<line x1="${x}" x2="${x}" y1="${axisY}" y2="${axisY+(m?9:5)}" stroke="#2d3436"/>`;
+    if(m)s+=`<text x="${x}" y="${axisY+24}" text-anchor="middle" font-size="13">${v}</text>`}
+  if(dots){s+=`<text x="2" y="26" font-size="11" fill="#636e72">データ</text>`;
+    dots.forEach(d=>{s+=`<circle cx="${X(d)}" cy="22" r="5" fill="#dfe6e9" stroke="#636e72"/>`})}
+  const[mn,q1,q2,q3,mx]=five;
+  if(name)s+=`<text x="2" y="${cy+5}" font-size="15" font-weight="700">${name}</text>`;
+  if(stage>=4){s+=`<line x1="${X(mn)}" x2="${X(q1)}" y1="${cy}" y2="${cy}" stroke="#2d3436" stroke-width="2"/><line x1="${X(q3)}" x2="${X(mx)}" y1="${cy}" y2="${cy}" stroke="#2d3436" stroke-width="2"/>
+   <line x1="${X(mn)}" x2="${X(mn)}" y1="${cy-10}" y2="${cy+10}" stroke="#2d3436" stroke-width="2"/><line x1="${X(mx)}" x2="${X(mx)}" y1="${cy-10}" y2="${cy+10}" stroke="#2d3436" stroke-width="2"/>`}
+  if(stage>=2)s+=`<rect x="${X(Math.min(q1,q3))}" y="${cy-18}" width="${Math.abs(X(q3)-X(q1))}" height="36" fill="#ffeaa7" stroke="#2d3436" stroke-width="2"/>`;
+  if(stage>=3)s+=`<line x1="${X(q2)}" x2="${X(q2)}" y1="${cy-18}" y2="${cy+18}" stroke="#d63031" stroke-width="4"/>`;
+  if(stage<99&&stage>=1)five.forEach((v,i)=>{s+=`<circle cx="${X(v)}" cy="${axisY}" r="6" fill="${COL[i]}"/>`});
+  if(label&&stage>=1)five.forEach((v,i)=>{s+=`<text x="${X(v)}" y="${cy-24}" text-anchor="middle" font-size="12" font-weight="700" fill="${COL[i]}">${fmt(v)}</text>`});
+  if(pct&&stage>=2)for(let i=0;i<4;i++){const a=X(five[i]),b=X(five[i+1]);s+=`<text x="${(a+b)/2}" y="${cy+36}" text-anchor="middle" font-size="12" fill="#636e72">約25%</text>`}
+  s+=extra+'</svg>';return s}
+
+/* ===== 図：ヒストグラム（値ごとの棒） ===== */
+function histSVG({freq,start=0,w=320,h=190,name=''}){
+  const n=freq.length,max=Math.max(...freq),L=30,B=h-26,T=16,bw=(w-L-8)/n,sy=(B-T)/max;
+  let s=`<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px">`;
+  s+=`<line x1="${L}" x2="${w-6}" y1="${B}" y2="${B}" stroke="#2d3436"/><line x1="${L}" x2="${L}" y1="${T-4}" y2="${B}" stroke="#2d3436"/>`;
+  freq.forEach((f,i)=>{const x=L+i*bw;if(f>0)s+=`<rect x="${x+1}" y="${B-f*sy}" width="${bw-2}" height="${f*sy}" fill="#74b9ff" stroke="#0984e3"/>`;
+    s+=`<text x="${x+bw/2}" y="${B+16}" text-anchor="middle" font-size="11">${start+i}</text>`});
+  s+=`<text x="${L-4}" y="${T+4}" text-anchor="end" font-size="11">${max}</text><text x="${L-4}" y="${B}" text-anchor="end" font-size="11">0</text>`;
+  if(name)s+=`<text x="${w-8}" y="14" text-anchor="end" font-size="14" font-weight="700">${name}</text>`;
+  return s+'</svg>'}
+function histClassSVG({freq,start=2,cw=2,w=340,h=200}){
+  const n=freq.length,max=Math.max(...freq),L=34,B=h-28,T=14,bw=(w-L-12)/n,sy=(B-T)/max;
+  let t=`<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:${w}px"><line x1="${L}" x2="${w-6}" y1="${B}" y2="${B}" stroke="#2d3436"/><line x1="${L}" x2="${L}" y1="${T-4}" y2="${B}" stroke="#2d3436"/>`;
+  for(let y=0;y<=max;y+=2)t+=`<line x1="${L}" x2="${w-8}" y1="${B-y*sy}" y2="${B-y*sy}" stroke="#dfe6e9"/><text x="${L-4}" y="${B-y*sy+4}" text-anchor="end" font-size="11">${y}</text>`;
+  freq.forEach((f,i)=>{const x=L+i*bw;if(f>0)t+=`<rect x="${x}" y="${B-f*sy}" width="${bw}" height="${f*sy}" fill="#74b9ff" stroke="#0984e3"/>`});
+  for(let i=0;i<=n;i++)t+=`<text x="${L+i*bw}" y="${B+16}" text-anchor="middle" font-size="11">${start+i*cw}</text>`;
+  return t+`<text x="${w-4}" y="${B+16}" text-anchor="end" font-size="11">(回)</text><text x="4" y="12" font-size="11">(人)</text></svg>`}
+const expand=(freq,start=0)=>freq.flatMap((f,i)=>Array(f).fill(start+i));
+
+/* ===== 図：並べたカード ===== */
+function cardsFig(data,st){
+  const S=stats(data),n=S.n,h=S.h,odd=n%2===1,P=50,arr=st>=1?S.s:data;
+  let c='',labs='';
+  arr.forEach((v,i)=>{let k='card';
+    if(st>=3){k+=i<h?' lo':(i>=n-h?' up':' mid')}
+    if(st>=2&&odd&&i===h)k+=' med';
+    c+=`<div class="${k}" style="left:${i*P}px">${v}</div>`});
+  if(st>=2)labs+=`<div class="lab top" style="left:${(n-1)/2*P+22}px">中央値 ${fmt(S.q2)}<br>▼</div>`;
+  if(st>=4)labs+=`<div class="lab b1" style="left:${(h-1)/2*P+22}px">▲<br>Q₁ = ${fmt(S.q1)}</div><div class="lab b3" style="left:${(n-h+n-1)/2*P+22}px">▲<br>Q₃ = ${fmt(S.q3)}</div>`;
+  return `<div class="cardwrap"><div class="cards" style="width:${n*P}px;height:140px">${labs}${c}</div></div>`}
+
+/* ===== 紙ふぶき・ヒント ===== */
+function confetti(){const c=$('#cf'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const cols=['#ff7675','#fdcb6e','#55efc4','#74b9ff','#a29bfe','#fd79a8'],P=[];
+  for(let i=0;i<180;i++)P.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.6,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,r:4+Math.random()*6,a:Math.random()*6,va:(Math.random()-.5)*.3,c:cols[i%6]});
+  let t=0;(function f(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore()});
+    if(++t<220)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+function showHint(h){$('#mt').innerHTML='<b>💡 ヒント</b><div style="margin-top:6px">'+h+'</div>';$('#modal').classList.add('on')}
+$('#mc').onclick=()=>$('#modal').classList.remove('on');
+$('#modal').onclick=e=>{if(e.target.id==='modal')$('#modal').classList.remove('on')};
+
+/* ===== 例題エンジン（ステップ表示） ===== */
+function mkExample(host,ex){
+  const w=el('div','ex');
+  w.innerHTML=`<div class="ttl">${ex.title}</div><div>${ex.intro||''}</div><div class="fig"></div><div class="stepbox"></div><div class="row"><button class="btn nx">▶ 次のステップ</button><button class="btn sub rs" style="display:none">↺ もう一度</button></div>`;
+  let k=0;const fig=$('.fig',w),sb=$('.stepbox',w),nx=$('.nx',w),rs=$('.rs',w);
+  const draw=()=>{fig.innerHTML=ex.fig(k)};draw();
+  nx.onclick=()=>{k++;const d=el('div','st',`<b>step${k}</b>　${ex.steps[k-1]}`);sb.appendChild(d);draw();
+    if(k>=ex.steps.length){nx.style.display='none';rs.style.display=''}};
+  rs.onclick=()=>{k=0;sb.innerHTML='';draw();nx.style.display='';rs.style.display='none'};
+  host.appendChild(w)}
+
+/* ===== 問題エンジン ===== */
+const SETS=[];
+function pnum(s){s=String(s).replace(/[０-９．－]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace('ー','-').replace(/[^\d.\-]/g,'');return s===''?NaN:parseFloat(s)}
+function mkSet(host,title,kind,qs,onClear){
+  const box=el('div','set '+kind);box.innerHTML=`<h4>${title}<span class="prog">0 / ${qs.length}</span></h4>`;
+  let solved=0;const rec={box,qs,done:false,checks:[]};
+  qs.forEach((q,i)=>{
+    const d=el('div','q');
+    d.innerHTML=`<div class="qno">${q.no||i+1}</div><div class="qbody">${q.prompt}<div class="ans"></div><div class="row"><button class="btn hint">💡 ヒント</button><button class="btn chk">答え合わせ</button><span class="res"></span></div></div>`;
+    const ans=$('.ans',d),res=$('.res',d);let check;
+    if(q.type==='multi'){
+      ans.innerHTML=q.fields.map((f,j)=>`<span class="fld">${f.label} ＝ <input class="in" data-j="${j}" inputmode="decimal" autocomplete="off"> ${f.unit||''}</span>`).join('');
+      check=()=>{const bad=[];q.fields.forEach((f,j)=>{if(!(Math.abs(pnum($(`input[data-j="${j}"]`,ans).value)-f.ans)<1e-6))bad.push(f.label)});return{ok:!bad.length,msg:bad.length?'まだちがうところがあります':''}};
+    }else if(q.type==='choice'||q.type==='multichoice'){
+      const multi=q.type==='multichoice';
+      ans.innerHTML=`<div class="${q.grid?'opts2':''}">`+q.options.map((o,j)=>`<label class="opt"><input type="${multi?'checkbox':'radio'}" name="q${Math.random()}${i}" value="${j}"> ${o}</label>`).join('')+'</div>';
+      const nm='g'+Math.random();ans.querySelectorAll('input').forEach(x=>x.name=nm);
+      check=()=>{const sel=[...ans.querySelectorAll('input:checked')].map(x=>+x.value).sort();const want=(multi?q.answer:[q.answer]).slice().sort();
+        return{ok:sel.length===want.length&&sel.every((v,j)=>v===want[j]),msg:'もう一度考えてみましょう'}};
+    }else if(q.type==='plot'){
+      check=mkDrag(ans,q)}
+    d._check=check;
+    $('.hint',d).onclick=()=>showHint(q.hint||'ゆっくり考えてみましょう。');
+    $('.chk',d).onclick=()=>{if(d._solved)return;const r=check();
+      if(r.ok){d._solved=true;res.className='res ok';res.textContent='⭕ 正解！';ans.querySelectorAll('input').forEach(x=>x.disabled=true);
+        solved++;$('.prog',box).textContent=`${solved} / ${qs.length}`;
+        if(solved===qs.length){rec.done=true;box.classList.add('clear');$('.prog',box).textContent='🎉 全問正解！';confetti();if(onClear)onClear()}}
+      else{res.className='res ng';res.textContent='❌ '+(r.msg||'もう一度')}};
+    box.appendChild(d);rec.checks.push(d)});
+  host.appendChild(box);SETS.push(rec);return rec}
+
+/* ===== 箱ひげ図をかく：ドラッグ問題 ===== */
+function mkDrag(host,q){
+  const S=stats(q.data),want=S.five,lo=q.lo,hi=q.hi,snap=q.snap||1,w=640,L=40,R=w-24;
+  const X=v=>L+(v-lo)/(hi-lo)*(R-L),inv=x=>lo+(x-L)/(R-L)*(hi-lo);
+  const vals=[.08,.28,.5,.72,.92].map(r=>Math.round((lo+(hi-lo)*r)/snap)*snap);
+  q._vals=vals;
+  const box=el('div','fig');host.appendChild(box);
+  const g=geom(q.data),laneY=i=>g.axisY+50+i*30;
+  function draw(){
+    let ex='';
+    vals.forEach((v,i)=>{const y=laneY(i);
+      ex+=`<text x="2" y="${y+4}" font-size="12" font-weight="700" fill="${COL[i]}">${FN[i]}</text>`;
+      ex+=`<line x1="${L+30}" x2="${R}" y1="${y}" y2="${y}" stroke="#dfe6e9" stroke-width="6" stroke-linecap="round"/>`;
+      ex+=`<line x1="${X(v)}" x2="${X(v)}" y1="${y}" y2="${g.axisY}" stroke="${COL[i]}" stroke-dasharray="3 3" opacity=".6"/>`;
+      ex+=`<circle data-i="${i}" cx="${X(v)}" cy="${y}" r="12" fill="${COL[i]}" style="cursor:grab"/><text x="${X(v)}" y="${y+4}" text-anchor="middle" font-size="11" fill="#fff" font-weight="700" pointer-events="none">${fmt(v)}</text>`});
+    box.innerHTML=boxSVG({lo,hi,five:vals,major:q.major||5,minor:q.minor||1,dots:q.data,label:false,extra:ex,extraH:5*30+10})}
+  draw();let cur=-1;
+  box.addEventListener('pointerdown',e=>{const c=e.target.closest('circle[data-i]');if(c){cur=+c.dataset.i;e.preventDefault()}});
+  window.addEventListener('pointermove',e=>{if(cur<0)return;const svg=$('svg',box),pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse());let v=Math.round(inv(p.x)/snap)*snap;v=Math.max(lo,Math.min(hi,v));
+    if(v!==vals[cur]){vals[cur]=v;draw()}});
+  window.addEventListener('pointerup',()=>{cur=-1});
+  return()=>{const okI=vals.map((v,i)=>Math.abs(v-want[i])<1e-9),ok=okI.every(Boolean);
+    return{ok,msg:'まだちがう印があります（合っている印：'+(okI.some(Boolean)?FN.filter((_,i)=>okI[i]).join('・'):'なし')+'）'}}}
+
+/* ===== 問題のつくり手 ===== */
+const dtxt=d=>`<div class="data">${d.join('，')}</div>`;
+function qS(data,keys,intro,hint,unit){const S=stats(data);return{type:'multi',prompt:`${intro}${dtxt(data)}`,fields:keys.map(k=>({label:N[k],ans:S[k],unit})),hint}}
+function qP(data,intro,o){return{type:'plot',data,lo:o.lo,hi:o.hi,major:o.major,minor:o.minor,snap:o.snap,prompt:`${intro}${dtxt(data)}<div style="font-size:14px;color:#636e72">下の5つの●をドラッグして、箱ひげ図をかきましょう。</div>`,hint:o.hint||HINT5}}
+function qP2(no,data,intro,o){const q=qP(data,intro,o);q.no=no;return q}
+const HINT_E='①小さい順に並べる　②真ん中でちょうど半分ずつに分ける　③前半の中央値がQ₁、後半の中央値がQ₃。（偶数個のとき、中央値は2つの真ん中の平均です）';
+const HINT_O='①小さい順に並べる　②真ん中の1つが中央値。③中央値は前半にも後半にも<b>入れません</b>。前半の中央値がQ₁、後半の中央値がQ₃。';
+const HINT5='まず小さい順に並べて、最小値・Q₁・中央値・Q₃・最大値の5つの数を出します。その数のところに●を動かすと、箱ひげ図が完成します。';
+const bx=(five,o={})=>boxSVG(Object.assign({five,lo:0,hi:10,major:1,minor:1,label:false,w:640},o));
+const bxs=(five,o={})=>bx(five,Object.assign({w:300},o));
+
+/* ===== ページ内容 ===== */
+const PAGES=[];
+function P(title,fn){PAGES.push({title,fn})}
+const T=(h)=>({html:h});
+
+/* --- 0 ふりかえり --- */
+P('0-1 ふりかえり',(add)=>{
+  add(T(`<h2>0　ふりかえり：中央値</h2><div class="point"><b class="t">ふりかえり</b><br>データを<b>小さい順</b>に並べたとき、<b>ちょうど真ん中</b>の値が<span class="c-q2">中央値（メジアン）</span>です。<br>・データの個数が<b>奇数</b>：真ん中の1つ　・<b>偶数</b>：真ん中の2つの<b>平均</b><br>この「真ん中で分ける」考え方を使って、これから<b>データを4つに分けて</b>散らばりを見ていきます。</div>`));
+  add({ex:{title:'【例題1】次のデータの中央値を求めよ。（1）9個のデータ',intro:dtxt([9,4,7,3,10,9,4,8,5]),
+    fig:k=>cardsFig([9,4,7,3,10,9,4,8,5],Math.min(k,2)),
+    steps:['小さい順に並べかえます。','9個なので、5番目が真ん中。中央値は <b>7</b> です。']}});
+  add({ex:{title:'【例題1】（2）12個のデータ',intro:dtxt([5,9,3,11,4,7,10,3,6,8,4,5]),
+    fig:k=>cardsFig([5,9,3,11,4,7,10,3,6,8,4,5],Math.min(k,2)),
+    steps:['小さい順に並べかえます。','12個なので、真ん中は6番目と7番目。（5＋6）÷2＝<b>5.5</b>。中央値は5.5です。']}});
+  add({set:['練習','practice',[qS([7,8,9,12,14,16,18],['q2'],'次のデータの中央値を求めよ。','奇数個です。真ん中の4番目の値です。'),qS([12,13,14,16,18,19,20,22],['q2'],'次のデータの中央値を求めよ。','8個（偶数個）です。4番目と5番目の平均です。')]]});
+  add({set:['確認問題','confirm',[qS([7,8,6,4,4,8,4,6,5],['q2'],'次の9個のデータの中央値を求めよ。','小さい順に並べてから、5番目を見ます。'),qS([5,3,6,2,4,1,3,3,5,4],['q2'],'次の10個のデータの中央値を求めよ。','小さい順に並べて、5番目と6番目の平均です。')]]})});
+
+/* --- 0-2 階級と階級値 --- */
+function freqTable(unit,rows,k,kk){
+  const n=rows.reduce((a,r)=>a+r.f,0),tot=rows.reduce((a,r)=>a+r.mid*r.f,0);
+  let t=`<table class="ft"><tr><th>階級(${unit})</th><th>階級値</th><th>度数(人)</th>${k>=2?'<th>階級値×度数</th>':''}</tr>`;
+  rows.forEach(r=>{t+=`<tr><td>${r.lo}以上${r.hi}未満</td><td class="${k===1?'hl':''}">${k>=1?r.mid:'？'}</td><td>${r.f}</td>${k>=2?`<td class="${k===2?'hl':''}">${r.mid}×${r.f}＝${r.mid*r.f}</td>`:''}</tr>`});
+  t+=`<tr><td>計</td><td></td><td>${n}</td>${k>=2?`<td class="${k>=3?'hl':''}">${k>=3?tot:''}</td>`:''}</tr></table>`;return t}
+const mkRows=(lo,w,fs)=>fs.map((f,i)=>({lo:lo+i*w,hi:lo+(i+1)*w,mid:lo+i*w+w/2,f}));
+const qFT=(no,unit,rows,intro)=>{const n=rows.reduce((a,r)=>a+r.f,0),m=rows.reduce((a,r)=>a+r.mid*r.f,0)/n;
+  const tb=freqTable(unit,rows.map(r=>r),0);
+  return[{no:no+'(1)',type:'multi',prompt:`${intro}${tb}各階級の階級値を求めよ。`,fields:rows.map(r=>({label:`${r.lo}以上${r.hi}未満`,ans:r.mid,unit})),hint:'階級値は、階級の真ん中の値です。（下の値＋上の値）÷2 で求めます。'},
+    {no:no+'(2)',type:'multi',prompt:`次の表（階級値入り）から、平均値を求めよ。${freqTable(unit,rows,1).replace('class="hl"','')}`,fields:[{label:'平均値',ans:m,unit}],hint:'（階級値×度数）をすべて足して、度数の合計でわります。'}]};
+P('0-2 階級と階級値',(add)=>{
+  add(T(`<h2>0-2　階級と階級値（度数分布表から平均値を求める）</h2>
+  <div class="point"><b class="t">重要</b><br>
+  データをいくつかの区間に分けたとき、その1つ1つの区間を<b>階級</b>といいます。<br>
+  ・<b>階級の幅</b>…区間の幅（下の例では10kg）<br>
+  ・<b>度数</b>…その階級に入るデータの個数（人数）<br>
+  ・<b>階級値</b>…階級の<b>真ん中の値</b>。（階級の下の値＋上の値）÷2<br>
+  　例：40kg以上50kg未満 の階級値は（40＋50）÷2＝<b>45kg</b><br>
+  ・「40以上50未満」は、<b>40を含み、50は含みません</b>。（50は次の階級に入ります）<br>
+  ・<b>平均値</b>＝（階級値×度数）の合計 ÷ 度数の合計<br>
+  　（もとのデータが全部わかるときは、平均値＝データの合計 ÷ 個数）<br>
+  　度数分布表では、<b>同じ階級に入るデータは、すべて階級値と同じ</b>と考えて計算します。</div>`));
+  const W=mkRows(40,10,[1,6,8,3,1,1]);
+  add({ex:{title:'【例題4】次の表は、あるクラスの男子の体重を測定したものである。(1)各階級の階級値を求めよ。(2)体重の平均値を求めよ。',
+    fig:k=>freqTable('kg',W,k),
+    steps:['(1) 階級値は階級の真ん中。たとえば40以上50未満は（40＋50）÷2＝45。同じように求めると、<b>45，55，65，75，85，95</b>（表の黄色）。','(2) 各階級で、<b>階級値×度数</b>を計算します。45×1，55×6，65×8，75×3，85×1，95×1。','それらを全部足します。45＋330＋520＋225＋85＋95＝<b>1300</b>。','平均値＝1300÷20＝<b>65kg</b>。（式：1/20×（45×1＋55×6＋65×8＋75×3＋85×1＋95×1）＝65）']}});
+  const H=mkRows(150,10,[3,4,11,2]);
+  const q3=qFT('3','cm',H,'<b>練習3</b>　次の表は、あるサッカー部の部員の身長を測定した結果をまとめたものである。');
+  const tests=mkRows(0,20,[2,5,8,4,1]),times=mkRows(0,10,[4,9,5,2]);
+  const qa=qFT('A','点',tests,'20人の数学のテストの得点をまとめた表である。'),qb=qFT('B','分',times,'20人の通学時間を調べて、まとめた表である。');
+  add({set:['練習','practice',[...q3]]});
+  add({set:['確認問題','confirm',[...qa,...qb]]})});
+
+/* --- 1 四分位数 --- */
+P('1 四分位数',(add)=>{
+  add(T(`<h2>1　データを4つに分ける（四分位数）</h2>
+  <div class="point"><b class="t">重要</b><br>
+  ・<b>範囲（レンジ）</b>＝最大値－最小値<br>
+  ・データを小さい順に並べ、真ん中の値（中央値）を<span class="c-q2">Q₂（第2四分位数）</span>といいます。<br>
+  ・中央値より小さいデータの中央値を<span class="c-q1">Q₁（第1四分位数）</span>、中央値より大きいデータの中央値を<span class="c-q3">Q₃（第3四分位数）</span>といいます。<br>
+  ・<b>四分位範囲</b>＝Q₃－Q₁<br>
+  ・データが奇数個のとき、<b>真ん中の1つは前半にも後半にも入れません</b>。</div>
+  <h3>▼ データの個数が偶数のとき</h3>`));
+  const D1=[62,41,90,47,96,68,45,84,72,78];
+  add({ex:{title:'【例題2】10人の英語のテストの結果である。Q₁，Q₂，Q₃，四分位範囲を求めよ。',intro:dtxt(D1)+'（点）',
+    fig:k=>cardsFig(D1,Math.min(k,4)),
+    steps:['まず、データを<b>小さい順</b>に並べかえます。','全体の<span class="c-q2">中央値Q₂</span>を求めます。10個なので5番目と6番目の平均。（68＋72）÷2＝<b>70</b>。','中央値を境に、<b>前半5個</b>（青）と<b>後半5個</b>（緑）に分けます。','前半5個の真ん中（3番目）が<span class="c-q1">Q₁＝47</span>。後半5個の真ん中（3番目）が<span class="c-q3">Q₃＝84</span>。','四分位範囲＝Q₃－Q₁＝84－47＝<b>37</b>。']}});
+  add({set:['練習','practice',[qS([2,3,4,5,6,7,8,9,10],['range','q1','q2','q3','iqr'],'次の9個のデータについて求めよ。（奇数個のデータです）',HINT_O),qS([3,4,4,5,6,6,7,8],['range','q1','q2','q3','iqr'],'次の8個のデータについて求めよ。',HINT_E)]]});
+  add({set:['確認問題','confirm',[qS([38,45,47,53,56,57,60,65,69,74,80],['q1','q2','q3','iqr'],'データAについて求めよ。（11個）',HINT_O),qS([41,46,54,56,60,63,66,71,75,80],['q1','q2','q3','iqr'],'データBについて求めよ。（10個）',HINT_E)]]});
+  add(T('<h3>▼ データの個数が奇数のとき</h3>'));
+  const D2=[14,28,18,23,21,24,26,16,22];
+  add({ex:{title:'【例題3】男子9人のハンドボール投げの記録（m）である。Q₁，Q₂，Q₃，四分位範囲を求めよ。',intro:dtxt(D2),
+    fig:k=>cardsFig(D2,Math.min(k,4)),
+    steps:['小さい順に並べかえます。','9個なので、真ん中は5番目の <span class="c-q2">22</span>。これが中央値Q₂です。','真ん中の22は<b>どちらにも入れず</b>（灰色）、前半4個と後半4個に分けます。','前半4個の真ん中は2番目と3番目の平均（16＋18）÷2＝<span class="c-q1">17</span>。後半4個は（24＋26）÷2＝<span class="c-q3">25</span>。','四分位範囲＝25－17＝<b>8</b>。']}});
+  add({set:['練習','practice',[qS([7,8,6,4,4,8,4,6,5],['q1','q2','q3'],'次の9個のデータのQ₁，Q₂，Q₃を求めよ。',HINT_O),qS([5,3,6,2,4,1,3,3,5,4],['q1','q2','q3','iqr'],'次の10個のデータのQ₁，Q₂，Q₃，四分位範囲を求めよ。',HINT_E)]]});
+  add({set:['確認問題','confirm',[qS([31,25,40,36,28,45,33],['q1','q2','q3','iqr'],'次の7個のデータについて求めよ。',HINT_O),qS([12,18,15,22,30,25,19,27],['q1','q2','q3','iqr'],'次の8個のデータについて求めよ。',HINT_E)]]})});
+
+/* --- 2 箱ひげ図をかく --- */
+P('2 箱ひげ図をかく',(add)=>{
+  add(T(`<h2>2　箱ひげ図をかこう</h2><div class="point"><b class="t">重要</b><br>データの分布を表す図を<b>箱ひげ図</b>といいます。次の<b>5つの数</b>（5要約数）を使ってかきます。<br>
+  <span class="c-min">最小値</span>，<span class="c-q1">Q₁</span>，<span class="c-q2">中央値</span>，<span class="c-q3">Q₃</span>，<span class="c-max">最大値</span><br>
+  ・<b>箱</b>…Q₁からQ₃まで（中に中央値のたて線）　・<b>ひげ</b>…箱から最小値・最大値までの線</div>`));
+  const D=[63,40,78,47,55,83,43,65,70,59];
+  add({ex:{title:'【例題4】10人の英語のテストの結果である。箱ひげ図をかけ。',intro:dtxt(D)+'（点）',
+    fig:k=>cardsFig(D,Math.min(k,4))+(k>=5?boxSVG({lo:30,hi:90,major:10,minor:5,five:stats(D).five,stage:k-4,label:true}):''),
+    steps:['小さい順に並べかえます。','中央値は5番目と6番目の平均（59＋63）÷2＝<b>61</b>。','前半5個・後半5個に分けます。','Q₁＝<span class="c-q1">47</span>，Q₃＝<span class="c-q3">70</span>。','数直線に5つの数 <span class="c-min">40</span>，<span class="c-q1">47</span>，<span class="c-q2">61</span>，<span class="c-q3">70</span>，<span class="c-max">83</span> を●で打ちます。','Q₁（47）からQ₃（70）まで、<b>箱</b>をかきます。','箱の中に、中央値（61）の<b>たて線</b>を入れます。','箱の左から最小値、箱の右から最大値まで<b>ひげ</b>をのばして完成！']}});
+  add(T('<p>▼ 次は自分でかいてみましょう。5つの●を<b>ドラッグ</b>して動かします。</p>'));
+  add({set:['練習','practice',[
+    qP([74,68,87,63,72,81,96,58,72,79],'次のデータの箱ひげ図をかけ。',{lo:50,hi:100,major:10,minor:2,snap:1}),
+    qP([2,3,4,4,5,6,7,7,8,9,10],'次の11個のデータの箱ひげ図をかけ。',{lo:0,hi:12,major:1,minor:1,snap:1,hint:HINT5+'（11個は奇数個。中央値は前半にも後半にも入れません）'})]]});
+  add({set:['確認問題','confirm',[
+    qP([14,28,18,23,21,24,26,16,22],'ハンドボール投げの記録（m）の箱ひげ図をかけ。',{lo:10,hi:30,major:5,minor:1,snap:1}),
+    qP([24,12,28,17,35,20,15,26],'次の8個のデータの箱ひげ図をかけ。',{lo:10,hi:40,major:5,minor:1,snap:1})]]})});
+
+/* --- 3 読みとる・くらべる --- */
+const RD=[1,3,4,7,9];
+P('3 読みとる・くらべる',(add)=>{
+  add(T(`<h2>3　箱ひげ図を読みとろう</h2>`));
+  add({ex:{title:'【例題5】生徒30人が1か月に読んだ本の冊数の箱ひげ図である。読みとってみよう。',
+    fig:k=>boxSVG({lo:0,hi:10,major:1,minor:1,five:RD,stage:99,label:k>=1,pct:k>=4}),
+    steps:['<span class="c-min">最小値は1冊</span>、<span class="c-max">最大値は9冊</span>。範囲（レンジ）＝9－1＝8冊。','箱の中のたて線が中央値。<span class="c-q2">中央値は4冊</span>。','箱の左はしがQ₁、右はしがQ₃。<span class="c-q1">Q₁＝3冊</span>，<span class="c-q3">Q₃＝7冊</span>。四分位範囲＝7－3＝<b>4冊</b>。','データを小さい順に並べて<b>4等分</b>すると、「最小値〜Q₁」「Q₁〜中央値」「中央値〜Q₃」「Q₃〜最大値」に、それぞれ約25%（30人なら約7〜8人）ずつ入っています。','だから、<b>箱の中に全体の約半分</b>（約15人）が入っています。<b>箱が長い</b>ほどデータは散らばっています。','⚠ 注意：<b>平均値は箱ひげ図からは読みとれません</b>。（中央値とはちがう数です）']}});
+  add({set:['練習','practice',[
+    {type:'multi',prompt:`次の箱ひげ図は、生徒30人が1か月に読んだ本の冊数である。${bx(RD)}`,fields:[{label:'中央値',ans:4,unit:'冊'},{label:'第3四分位数',ans:7,unit:'冊'},{label:'四分位範囲',ans:4,unit:'冊'},{label:'最大値',ans:9,unit:'冊'}],hint:'目もりを数えます。箱の中のたて線が中央値、箱の右はしがQ₃、四分位範囲は（Q₃－Q₁）です。'},
+    {type:'multi',prompt:`上の箱ひげ図（30人）で、<b>4冊以上</b>読んだ生徒は、約何人ですか。${bx(RD)}`,fields:[{label:'約',ans:15,unit:'人'}],hint:'4冊は中央値です。中央値より上には、全体の約半分がいます。'}]]});
+  add({set:['確認問題','confirm',[
+    {type:'multi',prompt:`ある学校の生徒の箱ひげ図である。${bx([2,5,8,12,15],{hi:16})}`,fields:[{label:'中央値',ans:8},{label:'Q₁',ans:5},{label:'Q₃',ans:12},{label:'四分位範囲',ans:7},{label:'範囲',ans:13}],hint:'四分位範囲＝Q₃－Q₁、範囲＝最大値－最小値です。'},
+    {type:'multi',prompt:`60人の生徒のテストの箱ひげ図で、Q₁＝50点、Q₃＝70点でした。<b>50点以上70点以下</b>の生徒は、約何人ですか。`,fields:[{label:'約',ans:30,unit:'人'}],hint:'Q₁からQ₃までの箱の中に、全体の約半分が入っています。'}]]});
+
+  add(T('<h2>2つ以上の箱ひげ図をくらべよう</h2>'));
+  const A=[4,5,5,6,7,7,8,8,9,9],B=[3,4,4,5,6,7,7,8,8,9],C=[4,5,5,6,6,6,7,7,9,9];
+  const sa=stats(A),sb_=stats(B),sc=stats(C),cmpo={lo:2,hi:10,major:1,minor:1,w:640};
+  add({ex:{title:'【例題6】10点満点の小テストA，B，Cの結果（各10人）を箱ひげ図にした。散らばりが最も大きいのはどれか。',intro:'A　<span class="data">'+A.join('，')+'</span><br>B　<span class="data">'+B.join('，')+'</span><br>C　<span class="data">'+C.join('，')+'</span>',
+    fig:k=>boxSVG(Object.assign({},cmpo,{five:sa.five,name:'A',stage:99,label:k>=1}))+boxSVG(Object.assign({},cmpo,{five:sb_.five,name:'B',stage:99,label:k>=1}))+boxSVG(Object.assign({},cmpo,{five:sc.five,name:'C',stage:99,label:k>=1})),
+    steps:['A，B，Cそれぞれの5つの数を求めて、並べてかきます。（数が図に出ました）','<b>箱の長さ</b>＝四分位範囲をくらべます。A＝8－5＝3，B＝8－4＝4，C＝7－5＝2。','範囲もくらべると、A＝9－4＝5，B＝9－3＝6，C＝9－4＝5。','どちらも<b>Bが最大</b>。答え：<b>B</b>。']}});
+  const mk=(n,five)=>boxSVG({lo:0,hi:100,major:10,minor:5,five,name:n,label:false,w:640});
+  add({set:['練習','practice',[
+    {type:'multi',prompt:`CとDの箱ひげ図である。それぞれの四分位範囲を求めよ。${mk('C',[20,30,45,60,80])}${mk('D',[25,40,50,55,75])}`,fields:[{label:'Cの四分位範囲',ans:30},{label:'Dの四分位範囲',ans:15}],hint:'箱の右はし（Q₃）から左はし（Q₁）をひきます。'},
+    {type:'choice',prompt:`上のCとDで、<b>中央値が大きい</b>のはどちらか。`,options:['C','D','同じ'],answer:1,hint:'箱の中のたて線の位置をくらべます。'}]]});
+  add({set:['確認問題','confirm',[
+    {type:'multi',prompt:`EとFの箱ひげ図である。それぞれの四分位範囲を求めよ。${mk('E',[50,60,70,80,100])}${mk('F',[40,55,65,85,95])}`,fields:[{label:'Eの四分位範囲',ans:20},{label:'Fの四分位範囲',ans:30}],hint:'Q₃－Q₁です。'},
+    {type:'choice',prompt:`上のEとFで、<b>Fのほうが大きい</b>ものを選べ。`,options:['中央値','四分位範囲','最小値','最大値'],answer:1,grid:true,hint:'E：中央値70・最小50・最大100。F：中央値65・最小40・最大95。四分位範囲は問題1で出しました。'}]]})});
+
+/* --- 4 ヒストグラムと箱ひげ図 --- */
+const FQ={sym:[0,0,1,3,7,10,7,3,1,0,0],wide:[3,3,4,4,5,6,5,4,4,3,3],left:[1,6,9,7,5,3,2,1,1,0,0],right:[0,0,1,1,2,3,5,7,9,6,1]};
+const hbox=(key,name)=>{const d=expand(FQ[key]);return boxSVG({lo:0,hi:10,major:1,minor:1,five:stats(d).five,label:false,w:300,name})};
+P('4 ヒストグラムと箱ひげ図',(add)=>{
+  add(T(`<h2>4　ヒストグラムと箱ひげ図</h2><div class="point"><b class="t">重要</b><br>
+  ① ヒストグラムが<b>左右対称</b>なら、箱ひげ図も左右対称になります。<br>
+  ② ヒストグラムの山の位置が<b>かたよっている</b>と、箱の位置も<b>かたよった方向</b>に寄ります。<br>
+  ③ <b>箱の長さ</b>は散らばりの度合い（データが集中している範囲）を表します。</div>
+  <div class="ex"><div class="ttl">【例題7】ヒストグラムを自分で変えてみよう</div>
+  <div>棒の下の ＋／− でデータをふやしたりへらしたりすると、<b>箱ひげ図がいっしょに動きます</b>。山の位置・散らばりと、箱の位置・長さの関係を見つけよう。</div>
+  <div class="chips" id="chips"></div><div class="hb"><div id="hbh"></div><div id="hbb"></div></div><div id="hbt" class="data" style="font-size:14px"></div></div>`));
+  add({after:()=>{
+    let f=FQ.sym.slice();const chips=$('#chips');
+    const pr={'左右対称（せまい）':'sym','左右対称（ひろい）':'wide','左に山':'left','右に山':'right'};
+    Object.entries(pr).forEach(([n,k])=>{const b=el('button','btn sub',n);b.onclick=()=>{f=FQ[k].slice();rd()};chips.appendChild(b)});
+    function rd(){const d=expand(f),S=stats(d);
+      $('#hbh').innerHTML=histSVG({freq:f,w:320})+`<div class="pm" style="--bw:${(320-38)/11}px;margin-left:30px">`+f.map((_,i)=>`<div><button data-i="${i}" data-d="1">＋</button><button data-i="${i}" data-d="-1">－</button></div>`).join('')+'</div>';
+      $('#hbb').innerHTML=boxSVG({lo:0,hi:10,major:1,minor:1,five:S.five,w:320,label:true});
+      $('#hbt').innerHTML=`${S.n}個　最小${fmt(S.min)}／Q₁ ${fmt(S.q1)}／中央値 ${fmt(S.q2)}／Q₃ ${fmt(S.q3)}／最大${fmt(S.max)}　四分位範囲 ${fmt(S.iqr)}`;
+      $('#hbh').querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,dd=+b.dataset.d;if(f[i]+dd>=0&&(d.length+dd)>=4){f[i]+=dd;rd()}})}
+    rd()}});
+  const histOpt=(k,n)=>histSVG({freq:FQ[k],w:300,name:n});
+  add({set:['練習','practice',[
+    {type:'choice',prompt:`次の箱ひげ図に対応するヒストグラムは、ア〜ウのどれか。${hbox('wide','')}`,grid:true,options:['ア'+histOpt('sym',''),'イ'+histOpt('wide',''),'ウ'+histOpt('left','')],answer:1,hint:'箱が<b>長い</b>＝散らばりが大きい。しかも左右対称です。アは山がせまく、ウは左にかたよっています。'},
+    {type:'choice',prompt:`次の箱ひげ図に対応するヒストグラムは、ア〜ウのどれか。${hbox('right','')}`,grid:true,options:['ア'+histOpt('left',''),'イ'+histOpt('right',''),'ウ'+histOpt('sym','')],answer:1,hint:'箱が右に寄っているので、山も右（数の大きいほう）にあります。'}]]});
+  const hh=[0,1,1,2,3,3,4,4,5,5,5,5,6,6,6,7,8,8,8,9],hf=Array(10).fill(0);hh.forEach(v=>hf[v]++);
+  const pk=f=>bxs(f,{hi:10});
+  add({set:['確認問題','confirm',[
+    {type:'choice',prompt:`次の箱ひげ図に対応するヒストグラムは、ア〜ウのどれか。${hbox('sym','')}`,grid:true,options:['ア'+histOpt('wide',''),'イ'+histOpt('sym',''),'ウ'+histOpt('right','')],answer:1,hint:'箱が中央にあって左右対称。しかも箱が短い（散らばりが小さい）ので、山がせまい形です。'},
+    {type:'choice',prompt:`次の箱ひげ図に対応するヒストグラムは、ア〜ウのどれか。${hbox('left','')}`,grid:true,options:['ア'+histOpt('right',''),'イ'+histOpt('sym',''),'ウ'+histOpt('left','')],answer:2,hint:'箱が左に寄っています。山は数の小さいほうです。'}]]})});
+
+/* --- 5 総合確認 --- */
+P('5 総合確認',(add)=>{
+  add(T(`<h2>5　総合確認（テキストの練習 1〜7）</h2><p style="font-size:14px;color:#636e72">入試問題もあります。ヒントを見ながら、全部で7問にチャレンジしましょう。</p>`));
+  const H1=[14,28,18,23,21,24,26,16,22];
+  const ob3=f=>boxSVG({lo:0,hi:32,major:4,minor:1,five:f,label:false,w:330});
+  const g1=[2,3,5,7,11],g2=[1,3,5,8,10];
+  const hf=[1,2,1,2,2,4,3,1,3,1];
+  const pk=f=>boxSVG({lo:0,hi:10,major:1,minor:.5,five:f,label:false,w:300});
+  const opts47=['ア'+pk([0,3.5,5,6.5,9]),'イ'+pk([0,3,5,6.5,9]),'ウ'+pk([0,2.5,5,7,9.5]),'エ'+pk([0,3,4.5,6.5,9])];
+  const hint47='ヒストグラムのデータを小さい順に並べると 0,1,1,2,3,3,4,4,5,5,5,5,6,6,6,7,8,8,8,9（20個）。最小値0・最大値9。Q₁は5番目と6番目の平均、中央値は10番目と11番目の平均です。';
+  const fq6=[3,4,5,4,6,3,2,1,2];
+  const ob6=f=>boxSVG({lo:0,hi:20,major:2,minor:1,five:f,label:false,w:330});
+  add({set:['総合確認（練習 1〜7）','confirm',[
+    {no:'1',type:'multi',prompt:`<b>問1</b>　ある中学校の男子生徒9人のハンドボール投げの記録（m）である。${dtxt(H1)}`,fields:[{label:'(1) 第2四分位数',ans:22,unit:'m'},{label:'(2) 第1四分位数',ans:17,unit:'m'},{label:'(3) 第3四分位数',ans:25,unit:'m'},{label:'(4) 四分位範囲',ans:8,unit:'m'}],hint:HINT_O},
+    qP2('1(5)',H1,'<b>問1(5)</b>　このデータを箱ひげ図に表せ。',{lo:12,hi:30,major:2,minor:1,snap:1}),
+    {no:'2',type:'multi',prompt:`<b>問2</b>　次の箱ひげ図は、生徒30人が1か月に読んだ本の冊数のデータを表したものである。${bx(RD)}`,fields:[{label:'(1) 中央値',ans:4,unit:'冊'},{label:'(2) 第3四分位数',ans:7,unit:'冊'},{label:'(3) 四分位範囲',ans:4,unit:'冊'},{label:'(4) 最大値',ans:9,unit:'冊'}],hint:'目もりを読みます。箱の中のたて線が中央値、箱の右はしがQ₃、四分位範囲は（Q₃－Q₁）です。'},
+    {no:'3',type:'choice',prompt:`<b>問3</b>　ある生徒15人の小テストの得点を、小さい順に並べたものである。このデータを表した箱ひげ図を①〜④から選べ。（佐賀県）${dtxt([4,6,6,6,8,10,12,14,16,18,20,22,24,28,30])}`,grid:true,
+      options:['①'+ob3([2,10,12,16,28]),'②'+ob3([4,6,14,22,30]),'③'+ob3([2,7,14,20,26]),'④'+ob3([4,10,16,23,30])],answer:1,hint:'15個なので、中央値は8番目（14）。前半7個の真ん中（4番目）がQ₁＝6、後半7個の真ん中がQ₃＝22。最小値4、最大値30です。'},
+    {no:'4',type:'choice',prompt:`<b>問4</b>　A組20人が6月に図書館から借りた本の冊数のヒストグラムである。図に対応する箱ひげ図をア〜エから選べ。（茨城県）<div class="fig">${histSVG({freq:hf,w:340})}</div>`,grid:true,options:opts47,answer:1,hint:hint47},
+    {no:'5',type:'multichoice',prompt:`<b>問5</b>　A中学校の3年1組と2組の生徒それぞれ31人が、ある期間に読んだ本の冊数の分布を箱ひげ図に表した。読みとれることとして<b>正しいものを2つ</b>選べ。（石川県）${boxSVG({lo:0,hi:12,major:2,minor:1,five:g1,name:'1組',label:false})}${boxSVG({lo:0,hi:12,major:2,minor:1,five:g2,name:'2組',label:false})}`,
+      options:['ア　1組と2組の平均値は等しい。','イ　2組の第3四分位数のほうが、1組の第3四分位数より大きい。','ウ　どちらの組もデータの四分位範囲は9冊である。','エ　どちらの組にも、読んだ本が7冊以上の生徒は8人以上いる。','オ　どちらの組にも、読んだ本が10冊の生徒が必ずいる。'],answer:[1,3],
+      hint:'ア：平均値は箱ひげ図から読めません。ウ：1組は7－3＝4、2組は8－3＝5。エ：31人のQ₃は24番目の値。25〜31番目の7人は、それ以上です。オ：10冊の生徒がいるかどうか、1組はわかりません。'},
+    {no:'6',type:'choice',prompt:`<b>問6</b>　図1は、ある学級の生徒30人の先月の図書館の利用回数のヒストグラムである。図2のア〜エのうち、この分布を表した箱ひげ図はどれか。（福島県）<div class="fig">${histClassSVG({freq:fq6})}</div>`,grid:true,
+      options:['ア'+ob6([5,7,10,15,19]),'イ'+ob6([3,7,11,13,18]),'ウ'+ob6([2,5,9,13,19]),'エ'+ob6([3,6,9,13,18])],answer:3,
+      hint:'30人。最小値は2回か3回（アは5なので×）。Q₁は8番目で、3＋4＝7人、3＋4＋5＝12人だから6〜8回の階級（ウは5なので×）。中央値は15番目と16番目の平均で、3＋4＋5＋4＝16より8〜10回の階級（アとイは×）。'},
+    {no:'7',type:'choice',prompt:`<b>問7</b>　A組20人が6月に図書館から借りた本の冊数のヒストグラムである。図に対応する箱ひげ図をア〜エから選べ。（茨城県）<div class="fig">${histSVG({freq:hf,w:340})}</div>`,grid:true,options:opts47,answer:1,hint:hint47}
+  ]]})});
+
+/* ===== 組み立て ===== */
+const main=$('#main'),nav=$('#nav'),after=[];
+PAGES.forEach((pg,pi)=>{
+  const sec=el('section','page'+(pi===0?' on':''));main.appendChild(sec);
+  const nb=el('button',pi===0?'on':'',pg.title);nav.appendChild(nb);
+  const sets=[];
+  const add=b=>{
+    if(b.html)sec.insertAdjacentHTML('beforeend',b.html);
+    else if(b.ex)mkExample(sec,b.ex);
+    else if(b.set){const r=mkSet(sec,b.set[0],b.set[1],b.set[2],()=>{if(sets.every(s=>s.done))nb.classList.add('done')});sets.push(r)}
+    else if(b.after)after.push(b.after)};
+  pg.fn(add);
+  nb.onclick=()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));sec.classList.add('on');nav.querySelectorAll('button').forEach(x=>x.classList.remove('on'));nb.classList.add('on');scrollTo(0,0)}});
+after.forEach(f=>f());
+window.GAMBA={stats,SETS,boxSVG,PAGES};
+</script>
+</body>
+</html>
